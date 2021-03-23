@@ -45,7 +45,19 @@ def ycormanager():
     global position, appendz, movementy
     mmm = len(position) %8
     return movementy[mmm]
-                    
+stretches = [0.0075, 0.0025]
+stretch3s = []
+canStretch = 0
+def stretchCheck(strch):
+    global stretch3s, stretches, canStretch
+    if strch == 1:
+        return stretches[len(stretch3s)%2]
+    else:
+        stretch3s.append(canStretch)
+        canStretch+=1
+    
+    
+   
 class Panda(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
@@ -81,6 +93,8 @@ class Panda(ShowBase):
         self.pandaActor4.setScale(scale4, scale4, scale4)
         self.pandaActor4.reparentTo(self.render)
         self.pandaActor4.loop("walk")'''
+    # Hide away panda 2 for later.
+        self.pandaActor2.setR(self.pandaActor2, 180) 
         
     # Keybinds   
         map = base.win.get_keyboard_map()
@@ -90,6 +104,7 @@ class Panda(ShowBase):
         s_button = map.get_mapped_button("s")
         d_button = map.get_mapped_button("d")
         e_button = map.get_mapped_button("e")
+        q_button = map.get_mapped_button("q")
 
     # Register event handlers
         self.accept("%s" % (w_button), self.movePandaTask)
@@ -97,7 +112,8 @@ class Panda(ShowBase):
         self.accept("%s" % (s_button), self.backPandaTask)
         self.accept("%s" % (d_button), self.rightPandaTask)
         self.accept("%s" % (e_button), self.pandaVanish)
-    
+        self.accept("%s" % (q_button), self.pandaStretchAttack)
+        
     # Task stuff
     def spinCameraTask(self, task):
         angleDegrees = task.time * 6
@@ -136,7 +152,10 @@ class Panda(ShowBase):
         moveManager()
         self.pandaActor.setR(self.pandaActor, 180)
         
+    def pandaStretchAttack(self):
+        stretch = stretchCheck(1)
+        self.pandaActor.setScale(stretch,stretch,stretch)
+        stretchCheck(2)
         
-
 app = Panda()
 app.run()
