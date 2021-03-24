@@ -1,5 +1,5 @@
 from math import pi, sin, cos
-#import pygame
+import random as r
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.actor.Actor import Actor
@@ -7,11 +7,11 @@ from direct.interval.IntervalGlobal import Sequence
 from panda3d.core import Point3
 
 
-
+#movement variable managers
 position = [] 
 appendz = 0
 #vectors for roational movement.
-movementy = [1,float(0.7071067812),-0,float(-0.7071067812),-1,float(-0.7071067812),0,float(0.7071067812)]
+movementy = [1,float(0.7071067812),0,float(-0.7071067812),-1,float(-0.7071067812),0,float(0.7071067812)]
 movementx = [0,float(-0.7071067812),-1,float(-0.7071067812),0,float(0.7071067812),1,float(0.7071067812)]
 canMove = True 
 def moveManager():
@@ -35,16 +35,16 @@ def posManager(plusminus):
                 position.append(appendz)
         position.remove(appendz)
         appendz += -1
-
 def xcormanager():
     global position, appendz, movementx
     mmm = len(position) %8
-    return movementx[mmm]
-    
+    return movementx[mmm]   
 def ycormanager():
     global position, appendz, movementy
     mmm = len(position) %8
     return movementy[mmm]
+
+#Size manager
 stretches = [0.0075, 0.0025]
 stretch3s = []
 canStretch = 0
@@ -55,6 +55,27 @@ def stretchCheck(strch):
     else:
         stretch3s.append(canStretch)
         canStretch+=1
+
+#attack mechanics
+canDamage = False
+pandaActorHealth = 25
+pandaActor2Health = 150
+def damageCheck(damage, damage2):
+    global canDamage, pandaActorHealth, pandaActor2Health
+    if damage:
+        if canDamage:
+            canDamage = False
+        else:
+            canDamage = True
+    else:
+        if canDamage:
+            dmg = r.randint(20,30)
+            bonus = r.randint(1,10)
+            if bonus > 9:
+                dmg += 20
+            pandaActor2Health -= dmg
+            
+    
     
     
    
@@ -110,6 +131,10 @@ class Panda(ShowBase):
         self.camera.setHpr(angleDegrees, 0, 0)
         
         return Task.cont
+        
+        
+        
+        
     
     def movePandaTask(self):
         yes = ycormanager()
@@ -120,7 +145,7 @@ class Panda(ShowBase):
         x=self.pandaActor.getX()
         y=self.pandaActor.getY()
         h=self.pandaActor.getH()
-        posInterval1 = self.pandaActor2.posInterval(3.0,Point3(x, y, 0))
+        posInterval1 = self.pandaActor2.posInterval(8.0,Point3(x, y, 0))
         hprInterval1 = self.pandaActor2.hprInterval(1.0,Point3(h,0,0))
         self.pandaPace = Sequence(posInterval1, hprInterval1, name="pandaPace")
         self.pandaPace.loop()
