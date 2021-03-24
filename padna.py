@@ -11,8 +11,8 @@ from panda3d.core import Point3
 position = [] 
 appendz = 0
 #vectors for roational movement.
-movementy = [1,0.66,-0.125,-0.66,-1,-0.66,0.125,0.66]
-movementx = [0.125,-0.66,-1,-0.66,-0.125,0.66,1,0.66]
+movementy = [1,float(0.7071067812),-0,float(-0.7071067812),-1,float(-0.7071067812),0,float(0.7071067812)]
+movementx = [0,float(-0.7071067812),-1,float(-0.7071067812),0,float(0.7071067812),1,float(0.7071067812)]
 canMove = True 
 def moveManager():
     global canMove
@@ -70,10 +70,6 @@ class Panda(ShowBase):
                                 {"walk": "models/panda-walk4"})
         self.pandaActor2 = Actor("models/panda-model",
                                 {"walk": "models/panda-walk4"})
-        '''self.pandaActor3 = Actor("models/panda-model",
-                                {"walk": "models/panda-walk4"})
-        self.pandaActor4 = Actor("models/panda-model",
-                                {"walk": "models/panda-walk4"})'''
         scale = 0.0025
         self.pandaActor.setScale(scale, scale, scale)
         self.pandaActor.reparentTo(self.render)
@@ -84,17 +80,9 @@ class Panda(ShowBase):
         self.pandaActor2.reparentTo(self.render)
         self.pandaActor2.loop("walk")
         
-        '''scale3 = 0.01
-        self.pandaActor3.setScale(scale3, scale3, scale3)
-        self.pandaActor3.reparentTo(self.render)
-        self.pandaActor3.loop("walk")
+
         
-        scale4 = 0.02
-        self.pandaActor4.setScale(scale4, scale4, scale4)
-        self.pandaActor4.reparentTo(self.render)
-        self.pandaActor4.loop("walk")'''
-    # Hide away panda 2 for later.
-        self.pandaActor2.setR(self.pandaActor2, 180) 
+        
         
     # Keybinds   
         map = base.win.get_keyboard_map()
@@ -128,6 +116,14 @@ class Panda(ShowBase):
         xes = xcormanager()
         self.pandaActor.setY(self.pandaActor.getY()-yes)
         self.pandaActor.setX(self.pandaActor.getX()+xes)
+        #Create pursuit from other panda
+        x=self.pandaActor.getX()
+        y=self.pandaActor.getY()
+        h=self.pandaActor.getH()
+        posInterval1 = self.pandaActor2.posInterval(3.0,Point3(x, y, 0))
+        hprInterval1 = self.pandaActor2.hprInterval(1.0,Point3(h,0,0))
+        self.pandaPace = Sequence(posInterval1, hprInterval1, name="pandaPace")
+        self.pandaPace.loop()
     
     def backPandaTask(self):
         yes = ycormanager()
@@ -140,7 +136,9 @@ class Panda(ShowBase):
         move = viewMove()
         if move:
             posManager(True)
-            self.pandaActor.setH(self.pandaActor, -45)
+            self.pandaActor.setH(self.pandaActor, -15)
+            self.pandaActor.setH(self.pandaActor, -15)
+            self.pandaActor.setH(self.pandaActor, -15)
         
     def leftPandaTask(self):
         move = viewMove()
