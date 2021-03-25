@@ -112,9 +112,13 @@ class Panda(ShowBase):
         self.pandaActor2.reparentTo(self.render)
         self.pandaActor2.loop("walk")
         
-
-        
-        
+        #set boss movement intervals for movement sequence.
+        posInterval1 = self.pandaActor2.posInterval(13,Point3(0, -10, 0),startPos=Point3(0, 10, 0))
+        posInterval2 = self.pandaActor2.posInterval(13,Point3(0, 10, 0),startPos=Point3(0, -10, 0))
+        hprInterval1 = self.pandaActor2.hprInterval(3,Point3(180, 0, 0),startHpr=Point3(0, 0, 0))
+        hprInterval2 = self.pandaActor2.hprInterval(3,Point3(0, 0, 0),startHpr=Point3(180, 0, 0))
+        self.bossSequene = Sequence(posInterval1, hprInterval1,posInterval2,hprInterval2,name="pandaPace")
+        self.bossSequene.loop()
         
     # Keybinds   
         map = base.win.get_keyboard_map()
@@ -142,29 +146,13 @@ class Panda(ShowBase):
         self.camera.setHpr(angleDegrees, 0, 0)
         
         return Task.cont
-        
-        
-        
-        
     
     def movePandaTask(self):
         yes = ycormanager()
         xes = xcormanager()
         self.pandaActor.setY(self.pandaActor.getY()-yes)
         self.pandaActor.setX(self.pandaActor.getX()+xes)
-        #Create pursuit from other panda
-        x=self.pandaActor.getX()
-        x2=self.pandaActor2.getX()
-        y=self.pandaActor.getY()
-        y2=self.pandaActor2.getY()
-        h=self.pandaActor.getH()
-        h2=self.pandaActor2.getH()
-        posInterval1 = self.pandaActor2.posInterval(1.0,Point3(x2,y2,0))
-        hprInterval1 = self.pandaActor2.posInterval(1.0,Point3(h,0,0))
-        posInterval2 = self.pandaActor2.posInterval(8.0,Point3(x,y,0))
-        hprInterval2 = self.pandaActor2.hprInterval(1.0,Point3(h,0,0))
-        self.pandaPace = Sequence(posInterval1, hprInterval1, posInterval2, hprInterval2, name="pandaPace")
-        self.pandaPace.loop()
+        
     
     def backPandaTask(self):
         yes = ycormanager()
