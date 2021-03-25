@@ -74,7 +74,18 @@ def damageCheck(damage, damage2):
             if bonus > 9:
                 dmg += 20
             pandaActor2Health -= dmg
+        else:
+            pandaActorHealth -= pandaActorHealth
             
+#check for health and "victory" conditions
+def finishCheck():
+    global pandaActorHealth, pandaActor2Health
+    if pandaActorHealth == 0:
+        return 0
+    elif pandaActor2Health == 0 and pandaActorHealth != 0:
+        return 1
+    else:
+        return 2
     
     
     
@@ -143,11 +154,16 @@ class Panda(ShowBase):
         self.pandaActor.setX(self.pandaActor.getX()+xes)
         #Create pursuit from other panda
         x=self.pandaActor.getX()
+        x2=self.pandaActor2.getX()
         y=self.pandaActor.getY()
+        y2=self.pandaActor2.getY()
         h=self.pandaActor.getH()
-        posInterval1 = self.pandaActor2.posInterval(8.0,Point3(x, y, 0))
-        hprInterval1 = self.pandaActor2.hprInterval(1.0,Point3(h,0,0))
-        self.pandaPace = Sequence(posInterval1, hprInterval1, name="pandaPace")
+        h2=self.pandaActor2.getH()
+        posInterval1 = self.pandaActor2.posInterval(1.0,Point3(x2,y2,0))
+        hprInterval1 = self.pandaActor2.posInterval(1.0,Point3(h,0,0))
+        posInterval2 = self.pandaActor2.posInterval(8.0,Point3(x,y,0))
+        hprInterval2 = self.pandaActor2.hprInterval(1.0,Point3(h,0,0))
+        self.pandaPace = Sequence(posInterval1, hprInterval1, posInterval2, hprInterval2, name="pandaPace")
         self.pandaPace.loop()
     
     def backPandaTask(self):
