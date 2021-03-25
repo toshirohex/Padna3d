@@ -166,6 +166,7 @@ class Panda(ShowBase):
         finish = finishCheck()
         if finish == 0:
             self.pandaActor.setZ(-5)
+            textObject = OnscreenText(text='WASTED', pos=(0, 0), scale=0.5, fg=(255,0,0,1))
         #elif finish == 1:
         
     
