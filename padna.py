@@ -5,7 +5,7 @@ from direct.task import Task
 from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence
 from panda3d.core import Point3
-
+from direct.gui.OnscreenText import OnscreenText
 
 #movement variable managers
 position = [] 
@@ -60,7 +60,7 @@ def stretchCheck(strch):
 canDamage = False
 pandaActorHealth = 25
 pandaActor2Health = 150
-def damageCheck(damage, damage2):
+def damageCheck(damage):
     global canDamage, pandaActorHealth, pandaActor2Health
     if damage:
         if canDamage:
@@ -152,6 +152,21 @@ class Panda(ShowBase):
         xes = xcormanager()
         self.pandaActor.setY(self.pandaActor.getY()-yes)
         self.pandaActor.setX(self.pandaActor.getX()+xes)
+        x = self.pandaActor.getX()
+        x2 = self.pandaActor2.getX()
+        y = self.pandaActor.getY()
+        y2 = self.pandaActor2.getY()
+        if x>x2-1 and x<x2+1:
+            if y>y2-1 and y<y2+1:
+                damageCheck(False)
+                damageCheck(True)
+                stretch = stretchCheck(1)
+                self.pandaActor.setScale(stretch,stretch,stretch)
+                stretchCheck(2)
+        finish = finishCheck()
+        if finish == 0:
+            self.pandaActor.setZ(-5)
+        #elif finish == 1:
         
     
     def backPandaTask(self):
@@ -180,6 +195,7 @@ class Panda(ShowBase):
         self.pandaActor.setR(self.pandaActor, 180)
         
     def pandaStretchAttack(self):
+        damageCheck(True)
         stretch = stretchCheck(1)
         self.pandaActor.setScale(stretch,stretch,stretch)
         stretchCheck(2)
