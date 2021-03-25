@@ -59,7 +59,7 @@ def stretchCheck(strch):
 #attack mechanics
 canDamage = False
 pandaActorHealth = 25
-pandaActor2Health = 150
+pandaActor2Health = 25
 def damageCheck(damage):
     global canDamage, pandaActorHealth, pandaActor2Health
     if damage:
@@ -80,9 +80,9 @@ def damageCheck(damage):
 #check for health and "victory" conditions
 def finishCheck():
     global pandaActorHealth, pandaActor2Health
-    if pandaActorHealth == 0:
+    if pandaActorHealth <= 0:
         return 0
-    elif pandaActor2Health == 0 and pandaActorHealth != 0:
+    elif pandaActor2Health <= 0:
         return 1
     else:
         return 2
@@ -119,6 +119,7 @@ class Panda(ShowBase):
         hprInterval2 = self.pandaActor2.hprInterval(3,Point3(0, 0, 0),startHpr=Point3(180, 0, 0))
         self.bossSequene = Sequence(posInterval1, hprInterval1,posInterval2,hprInterval2,name="pandaPace")
         self.bossSequene.loop()
+        
         
     # Keybinds   
         map = base.win.get_keyboard_map()
@@ -167,8 +168,9 @@ class Panda(ShowBase):
         if finish == 0:
             self.pandaActor.setZ(-5)
             textObject = OnscreenText(text='WASTED', pos=(0, 0), scale=0.5, fg=(255,0,0,1))
-        #elif finish == 1:
-        
+        elif finish == 1:
+            self.pandaActor2.setZ(-5)
+            textObj = OnscreenText(text='#1 Victory Royale', pos=(0, 0), scale=0.5, fg=(0,0,255,1))
     
     def backPandaTask(self):
         yes = ycormanager()
