@@ -2,12 +2,12 @@ import random as r
 # movement variable managers
 position = []
 appendz = 0
-# vectors for roational movement.
-movementy = [1, float(0.7071067812), 0, float(-0.7071067812), -1, float(-0.7071067812), 0, float(0.7071067812)]
-movementx = [0, float(-0.7071067812), -1, float(-0.7071067812), 0, float(0.7071067812), 1, float(0.7071067812)]
+# vectors for rotational movement.
+movementy = [1, 0.7071067812, 0, -0.7071067812, -1, -0.7071067812, 0, 0.7071067812]
+movementx = [0, -0.7071067812, -1, -0.7071067812, 0, 0.7071067812, 1, 0.7071067812]
+
+#keeps panda from rotating when uses the disapear move triggered by e.
 canMove = True
-
-
 def moveManager():
     global canMove
     if canMove:
@@ -33,7 +33,6 @@ def posManager(plusminus):
                 position.append(appendz)
         position.remove(appendz)
         appendz += -1
-
 
 def xcormanager():
     global position, appendz, movementx
@@ -69,21 +68,22 @@ pandaActor2Health = 150
 
 
 def damageCheck(damage):
-    global canDamage, pandaActorHealth, pandaActor2Health
+    global canDamage, pandaActorHealth, pandaActor2Health, canMove
     if damage:
         if canDamage:
             canDamage = False
         else:
             canDamage = True
     else:
-        if canDamage:
-            dmg = r.randint(20, 30)
-            bonus = r.randint(1, 10)
-            if bonus > 9:
-                dmg += 20
-            pandaActor2Health -= dmg
-        else:
-            pandaActorHealth -= pandaActorHealth
+        if canMove:
+            if canDamage:
+                dmg = r.randint(20, 30)
+                bonus = r.randint(1, 10)
+                if bonus > 9:
+                    dmg += 20
+                pandaActor2Health -= dmg
+            else:
+                pandaActorHealth -= pandaActorHealth
 
 
 # check for health and "victory" conditions
@@ -97,12 +97,22 @@ def finishCheck():
         return 2
 
 
+
 canReset = False
 
 def resetManager(true):
-    global canReset
+    global canReset, pandaActor2Health, pandaActorHealth
     if true:
-        canReset == true
-        return canReset
+        if pandaActorHealth <= 0 or pandaActor2Health <= 0:
+            canReset = True
+        else:
+            canReset = False
     else:
-        canReset = False
+        return canReset
+
+def reset():
+    global pandaActorHealth, pandaActor2Health, canReset
+    if canReset:
+        pandaActorHealth = 25
+        pandaActor2Health = 150
+

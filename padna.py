@@ -7,7 +7,7 @@ from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence
 from panda3d.core import Point3
 from direct.gui.OnscreenText import OnscreenText
-
+textObjects = []
 class Panda(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
@@ -35,7 +35,7 @@ class Panda(ShowBase):
         hprInterval2 = self.pandaActor2.hprInterval(3,Point3(0, 0, 0),startHpr=Point3(180, 0, 0))
         self.bossSequene = Sequence(posInterval1, hprInterval1,posInterval2,hprInterval2,name="pandaPace")
         self.bossSequene.loop()
-        
+
         
     # Keybinds   
         map = base.win.get_keyboard_map()
@@ -46,7 +46,7 @@ class Panda(ShowBase):
         d_button = map.get_mapped_button("d")
         e_button = map.get_mapped_button("e")
         q_button = map.get_mapped_button("q")
-
+        enter_button = map.get_mapped_button("f")
     # Register event handlers
         self.accept("%s" % (w_button), self.movePandaTask)
         self.accept("%s" % (a_button), self.leftPandaTask)
@@ -54,6 +54,7 @@ class Panda(ShowBase):
         self.accept("%s" % (d_button), self.rightPandaTask)
         self.accept("%s" % (e_button), self.pandaVanish)
         self.accept("%s" % (q_button), self.pandaStretchAttack)
+        self.accept("%s" % (enter_button), self.pandaResetTask)
         
     # Task stuff
     def spinCameraTask(self, task):
@@ -65,6 +66,7 @@ class Panda(ShowBase):
         return Task.cont
     
     def movePandaTask(self):
+        global textObjects
         yes = m.ycormanager()
         xes = m.xcormanager()
         self.pandaActor.setY(self.pandaActor.getY()-yes)
@@ -83,13 +85,19 @@ class Panda(ShowBase):
         finish = m.finishCheck()
         if finish == 0:
             self.pandaActor.setZ(-5)
-            textObject = OnscreenText(text='WASTED',pos=(0,0),scale=0.5,fg=(255,0,0,1))
+            textObj = OnscreenText(text='WASTED',pos=(0,0),scale=0.5,fg=(255,0,0,1))
+            #textObj2 = OnscreenText(text='Press ENTER to reset',pos=(0,-0.25),scale=0.125,fg=(255,0,0,1))
+            m.resetManager(True)
+            textObjects.append(textObj)
+            #textObjects.append(textObj2)
         elif finish == 1:
             self.bossSequene.finish()
             self.pandaActor2.setZ(-5)
-            textObj = OnscreenText(text='#1 Victory Royale', pos=(0,0),scale=0.5,fg=(0,0,255,1))
-        #elif finish != 2:
-        #    resetManager(True)
+            textObj = OnscreenText(text='YOU WIN!', pos=(0,0),scale=0.5,fg=(255,255,255,1))
+            #tedtObj2 = OnscreenText(text='Press ENTER to reset',pos=(0,-0.25),scale=0.125,fg=(255,255,255,1))
+            m.resetManager(True)
+            textObjects.append(textObj)
+            #textObjects.append(textObj2)
 
     def backPandaTask(self):
         yes = m.ycormanager()
@@ -121,6 +129,18 @@ class Panda(ShowBase):
         stretch = m.stretchCheck(1)
         self.pandaActor.setScale(stretch,stretch,stretch)
         m.stretchCheck(2)
+
+    def pandaResetTask(self):
+        global textObjects
+        canReset = m.resetManager(False)
+        if canReset:
+            self.pandaActor2.setZ(0)
+            self.bossSequene.loop
+            self.pandaActor.setZ(0)
+            m.resetManager(True)
+            textObjects[0].destroy()
+            #textObjects[1].destroy()
+
         
 pdna = Panda()
 pdna.run()
