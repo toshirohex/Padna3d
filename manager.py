@@ -8,49 +8,53 @@ movementx = [0, -0.7071067812, -1, -0.7071067812, 0, 0.7071067812, 1, 0.70710678
 
 #keeps panda from rotating when uses the disapear move triggered by e.
 canMove = True
-def moveManager():
-    global canMove
-    if canMove:
-        canMove = False
-    else:
-        canMove = True
-
-
-def viewMove():
-    global canMove
-    return canMove
-
-
-def posManager(plusminus):
-    global position, appendz
-    if plusminus:
-        appendz += 1
-        position.append(appendz)
-    else:
-        if appendz == 0:
-            for i in range(8):
-                appendz += 1
-                position.append(appendz)
-        position.remove(appendz)
-        appendz += -1
-
-def xcormanager():
-    global position, appendz, movementx
-    mmm = len(position) % 8
-    return movementx[mmm]
-
-
-def ycormanager():
-    global position, appendz, movementy
-    mmm = len(position) % 8
-    return movementy[mmm]
-
 
 # Size manager
 stretches = [0.0075, 0.0025]
 stretch3s = []
 canStretch = 0
 
+# attack mechanics
+canDamage = False
+pandaActorHealth = 25
+pandaActor2Health = 150
+
+#Used to ensure that the reset isn't accidentally triggered.
+canReset = False
+
+def moveManager():
+        global canMove
+        if canMove:
+            canMove = False
+        else:
+            canMove = True
+
+def viewMove():
+        global canMove
+        return canMove
+
+def posManager(plusminus):
+        global position, appendz
+        if plusminus:
+            appendz += 1
+            position.append(appendz)
+        else:
+            if appendz == 0:
+                for i in range(8):
+                    appendz += 1
+                    position.append(appendz)
+            position.remove(appendz)
+            appendz += -1
+
+def xcormanager():
+    global position, appendz, movementx
+    mmm = len(position) % 8
+    return movementx[mmm]
+
+def ycormanager():
+    global position, appendz, movementy
+    mmm = len(position) % 8
+    return movementy[mmm]
 
 def stretchCheck(strch):
     global stretch3s, stretches, canStretch
@@ -59,13 +63,6 @@ def stretchCheck(strch):
     else:
         stretch3s.append(canStretch)
         canStretch += 1
-
-
-# attack mechanics
-canDamage = False
-pandaActorHealth = 25
-pandaActor2Health = 150
-
 
 def damageCheck(damage):
     global canDamage, pandaActorHealth, pandaActor2Health, canMove
@@ -85,7 +82,6 @@ def damageCheck(damage):
             else:
                 pandaActorHealth -= pandaActorHealth
 
-
 # check for health and "victory" conditions
 def finishCheck():
     global pandaActorHealth, pandaActor2Health
@@ -95,10 +91,6 @@ def finishCheck():
         return 1
     else:
         return 2
-
-
-
-canReset = False
 
 def resetManager(true):
     global canReset, pandaActor2Health, pandaActorHealth
@@ -115,4 +107,3 @@ def reset():
     if canReset:
         pandaActorHealth = 25
         pandaActor2Health = 150
-
