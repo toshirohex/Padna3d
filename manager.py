@@ -5,6 +5,8 @@ appendz = 0
 # vectors for rotational movement.
 movementy = [1, 0.7071067812, 0, -0.7071067812, -1, -0.7071067812, 0, 0.7071067812]
 movementx = [0, -0.7071067812, -1, -0.7071067812, 0, 0.7071067812, 1, 0.7071067812]
+'''cameraX = [0,1.3334,2,1.3334,0,-1.3334,-2,-1.3334,0]
+cameraY = [2,1.3334,0,-1.3334,-2,-1.3334,0,1.3334,2]'''
 
 #keeps panda from rotating when uses the disapear move triggered by e.
 canMove = True
