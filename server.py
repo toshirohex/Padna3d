@@ -1,9 +1,1 @@
-import socket
-import ssl
-
-hostname = '147.226.184.6'
-context = ssl.create_default_context()
-
-with socket.create_connection((hostname, 443)) as sock:
-    with context.wrap_socket(sock, server_hostname=hostname) as ssock:
-        print(ssock.version())
+# will eventually be used for networking code if I can ever figure out how to do networking with python socket.

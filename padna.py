@@ -9,7 +9,6 @@ from direct.gui.OnscreenText import OnscreenText
 
 import random as r
 # movement variable managers
-position = []
 appendz = 0
 # vectors for rotational movement.
 movementy = [1, 0.7071067812, 0, -0.7071067812, -1, -0.7071067812, 0, 0.7071067812]
@@ -45,26 +44,22 @@ def viewMove():
     return canMove
 
 def posManager(plusminus):
-    global position, appendz
+    global appendz
     if plusminus:
         appendz += 1
-        position.append(appendz)
     else:
         if appendz == 0:
-            for i in range(8):
-                appendz += 1
-                position.append(appendz)
-        position.remove(appendz)
+            appendz += 8
         appendz += -1
 
 def xcormanager():
-    global position, appendz, movementx
-    mmm = len(position) % 8
+    global appendz, movementx
+    mmm = appendz % 8
     return movementx[mmm]
 
 def ycormanager():
-    global position, appendz, movementy
-    mmm = len(position) % 8
+    global position, movementy
+    mmm = appendz % 8
     return movementy[mmm]
 
 def stretchCheck(strch):
