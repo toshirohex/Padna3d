@@ -1,5 +1,6 @@
 from math import pi, sin, cos
 import random as r
+import time
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from direct.actor.Actor import Actor
@@ -16,12 +17,8 @@ movementx = [0, -0.7071067812, -1, -0.7071067812, 0, 0.7071067812, 1, 0.70710678
 '''cameraX = [0,1.3334,2,1.3334,0,-1.3334,-2,-1.3334,0]
 cameraY = [2,1.3334,0,-1.3334,-2,-1.3334,0,1.3334,2]'''
 
-#keeps panda from rotating when uses the disapear move triggered by e.
-canMove = True
-
 # Size manager
 stretches = [0.0075, 0.0025]
-stretch3s = []
 canStretch = 0
 
 # attack mechanics
@@ -29,19 +26,18 @@ canDamage = False
 pandaActorHealth = 25
 pandaActor2Health = 150
 
-#Used to ensure that the reset isn't accidentally triggered.
-canReset = False
+canRotate = True
 
-def moveManager():
-    global canMove
-    if canMove:
-        canMove = False
+def rotateManager():
+    global canRotate
+    if canRotate:
+        canRotate = False
     else:
-        canMove = True
+        canRotate = True
 
-def viewMove():
-    global canMove
-    return canMove
+def viewRotate():
+    global canRotate
+    return canRotate
 
 def posManager(plusminus):
     global appendz
@@ -52,34 +48,24 @@ def posManager(plusminus):
             appendz += 8
         appendz += -1
 
-def xcormanager():
-    global appendz, movementx
-    mmm = appendz % 8
-    return movementx[mmm]
-
-def ycormanager():
-    global position, movementy
-    mmm = appendz % 8
-    return movementy[mmm]
 
 def stretchCheck(strch):
-    global stretch3s, stretches, canStretch
+    global stretches, canStretch
     if strch == 1:
-        return stretches[len(stretch3s) % 2]
+        return stretches[canStretch % 2]
     else:
-        stretch3s.append(canStretch)
         canStretch += 1
 
 #determines damage variables on panda collision.
 def damageCheck(damage):
-    global canDamage, pandaActorHealth, pandaActor2Health, canMove
+    global canDamage, pandaActorHealth, pandaActor2Health, canRotate
     if damage:
         if canDamage:
             canDamage = False
         else:
             canDamage = True
     else:
-        if canMove:
+        if canRotate:
             if canDamage:
                 dmg = r.randint(20, 30)
                 bonus = r.randint(1, 10)
@@ -87,7 +73,15 @@ def damageCheck(damage):
                     dmg += 20
                 pandaActor2Health -= dmg
             else:
-                pandaActorHealth -= pandaActorHealth
+                dmg = 0
+        # Using for loop to decrease the chance of the panda surviving a hit. will follow a binomial curve.
+        # The higher I set iterations the less of a chance the panda has at surviving.
+                iterations = r.randint(50,100)
+                for i in range(iterations):
+                    dmg+=(r.randint(20,30))
+                dmg = dmg/iterations
+                pandaActorHealth -= dmg
+                dmg = 0
 
 # check for health and "victory" conditions
 def finishCheck():
@@ -115,6 +109,12 @@ def reset():
         pandaActorHealth = 25
         pandaActor2Health = 150
 
+def moveManager():
+    if pandaActorHealth <= 0:
+        return False
+    else:
+        return True
+
 textObjects = [1,2]
 class Panda(ShowBase):
     def __init__(self):
@@ -126,23 +126,19 @@ class Panda(ShowBase):
         self.taskMgr.add(self.spinCameraTask, "SpinCameraTask")
 
         self.pandaActor = Actor("models/panda-model",{"walk": "models/panda-walk4"})
-        self.pandaActor2 = Actor("models/panda-model",{"walk": "models/panda-walk4"})
-        scale = 0.0025
-        self.pandaActor.setScale(scale, scale, scale)
+        self.pandaActor.setScale(0.0025,0.0025,0.0025)
         self.pandaActor.reparentTo(self.render)
         self.pandaActor.loop("walk")
-        
-        scale2 = 0.005
-        self.pandaActor2.setScale(scale2, scale2, scale2)
+
+        self.pandaActor2 = Actor("models/panda-model",{"walk": "models/panda-walk4"})
+        self.pandaActor2.setScale(0.005,0.005,0.005)
         self.pandaActor2.reparentTo(self.render)
         self.pandaActor2.loop("walk")
-        
+
         #set boss movement intervals for movement sequence.
-        posInterval1 = self.pandaActor2.posInterval(13,Point3(0, -10, 0),startPos=Point3(0, 10, 0))
-        posInterval2 = self.pandaActor2.posInterval(13,Point3(0, 10, 0),startPos=Point3(0, -10, 0))
-        hprInterval1 = self.pandaActor2.hprInterval(3,Point3(180, 0, 0),startHpr=Point3(0, 0, 0))
-        hprInterval2 = self.pandaActor2.hprInterval(3,Point3(0, 0, 0),startHpr=Point3(180, 0, 0))
-        self.bossSequene = Sequence(posInterval1, hprInterval1,posInterval2,hprInterval2,name="pandaPace")
+        interval = [self.pandaActor2.posInterval(13,Point3(0, -10, 0),startPos=Point3(0, 10, 0)),self.pandaActor2.posInterval(13,Point3(0, 10, 0),startPos=Point3(0, -10, 0)),
+                    self.pandaActor2.hprInterval(3,Point3(180, 0, 0),startHpr=Point3(0, 0, 0)),self.pandaActor2.hprInterval(3,Point3(0, 0, 0),startHpr=Point3(180, 0, 0))]
+        self.bossSequene = Sequence(interval[0],interval[2],interval[1],interval[3],name="pandaPace")
         self.bossSequene.loop()
 
         #make camera fixed on panda
@@ -157,7 +153,9 @@ class Panda(ShowBase):
         d_button = map.get_mapped_button("d")
         e_button = map.get_mapped_button("e")
         q_button = map.get_mapped_button("q")
-        enter_button = map.get_mapped_button("f")
+        f_button = map.get_mapped_button("f")
+        o_button = map.get_mapped_button("o")
+
     # Register event handlers
         self.accept("%s" % (w_button), self.movePandaTask)
         self.accept("%s" % (a_button), self.leftPandaTask)
@@ -165,7 +163,8 @@ class Panda(ShowBase):
         self.accept("%s" % (d_button), self.rightPandaTask)
         self.accept("%s" % (e_button), self.pandaVanish)
         self.accept("%s" % (q_button), self.pandaStretchAttack)
-        #self.accept("%s" % (enter_button), self.pandaResetTask)
+        self.accept("%s" % (f_button), self.pandaSpinAttack)
+        self.accept("%s" % (o_button), self.pandaResetTask)
         
     # Moves camera to fully show the 3d environment.
     def spinCameraTask(self, task):
@@ -173,22 +172,23 @@ class Panda(ShowBase):
         angleRadians = angleDegrees * (pi / 180.0)
         self.camera.setPos(20 * sin(angleRadians), -20 * cos(angleRadians), 3)
         self.camera.setHpr(angleDegrees, 0, 0)
-        return Task.cont
+        return task.cont
 
     # Moves pandaActor forward
     def movePandaTask(self):
-        global textObjects
-        yes = ycormanager()
-        xes = xcormanager()
-        self.pandaActor.setX(self.pandaActor.getX()+xes)
-        self.pandaActor.setY(self.pandaActor.getY()-yes)
-        #self.camera.setX(self.pandaActor.getX()-(2*xes))
-        #self.camera.setY(self.pandaActor.getY()+(2*yes))
+        global textObjects,appendz,movementx,movementy
         x = self.pandaActor.getX()
-        x2 = self.pandaActor2.getX()
         y = self.pandaActor.getY()
+        z = self.pandaActor.getZ()
+        xes = movementx[appendz%8]
+        yes = movementy[appendz%8]
+        forward = Sequence(self.pandaActor.posInterval(0.25,Point3(x+xes, y-yes, z),startPos=Point3(x, y, z)))
+        if moveManager():
+            forward.start()
+        x2 = self.pandaActor2.getX()
         y2 = self.pandaActor2.getY()
-        if x>x2-1 and x<x2+1:
+        move = viewRotate()
+        if x>x2-1 and x<x2+1 and move:
             if y>y2-1 and y<y2+1:
                 damageCheck(False)
                 damageCheck(True)
@@ -199,63 +199,80 @@ class Panda(ShowBase):
         if finish == 0:
             self.pandaActor.setZ(-5)
             textObj = OnscreenText(text='WASTED',pos=(0,0),scale=0.5,fg=(255,0,0,1))
-            #textObj2 = OnscreenText(text='Press ENTER to reset',pos=(0,-0.25),scale=0.125,fg=(255,0,0,1))
+            textObj2 = OnscreenText(text='Press O to reset',pos=(0,-0.25),scale=0.125,fg=(255,0,0,1))
             resetManager(True)
             textObjects[0]=textObj
-            #textObjects[1]=textObj2
+            textObjects[1]=textObj2
         elif finish == 1:
             self.bossSequene.finish()
             self.pandaActor2.setZ(-5)
             textObj = OnscreenText(text='YOU WIN!', pos=(0,0),scale=0.5,fg=(255,255,255,1))
-            #textObj2 = OnscreenText(text='Press ENTER to reset',pos=(0,-0.25),scale=0.125,fg=(255,255,255,1))
+            textObj2 = OnscreenText(text='Press O to reset',pos=(0,-0.25),scale=0.125,fg=(255,255,255,1))
             resetManager(True)
             textObjects[0]=textObj
-            #textObjects[1]=textObj2
+            textObjects[1]=textObj2
 
     def backPandaTask(self):
-        yes = ycormanager()
-        xes = xcormanager()
-        padna = [self.pandaActor, self.camera]
-        padna[0].setX(self.pandaActor.getX()-xes)
-        padna[0].setY(self.pandaActor.getY()+yes)
-        #padna[1].setX(self.pandaActor.getX()+(2*xes))
-        #padna[1].setY(self.pandaActor.getY()-(2*yes))
+        global appendz,movementx,movementy
+        x = self.pandaActor.getX()
+        y = self.pandaActor.getY()
+        z = self.pandaActor.getZ()
+        xes = movementx[appendz%8]
+        yes = movementy[appendz%8]
+        backward = Sequence(self.pandaActor.posInterval(0.25,Point3(x-xes, y+yes, z),startPos=Point3(x, y, z)))
+        if moveManager():
+            backward.start()
     
     def rightPandaTask(self):
-        move = viewMove()
-        if move:
+        move = viewRotate()
+        hpr = [self.pandaActor.getH(),self.pandaActor.getP(),self.pandaActor.getR()]
+        rightSequence = Sequence(self.pandaActor.hprInterval(0.5,Point3(hpr[0]-45,hpr[1],hpr[2]),startHpr=Point3(hpr[0],hpr[1],hpr[2])), name="rightSequence")
+        if move: 
             posManager(True)
-            self.pandaActor.setH(self.pandaActor, -45)
-            self.camera.setH(self.camera, 45)
+            rightSequence.start()
 
     def leftPandaTask(self):
-        move = viewMove()
+        move = viewRotate()
+        hpr = [self.pandaActor.getH(),self.pandaActor.getP(),self.pandaActor.getR()]
+        leftSequence = Sequence(self.pandaActor.hprInterval(0.5,Point3(hpr[0]+45,hpr[1],hpr[2]),startHpr=Point3(hpr[0],hpr[1],hpr[2])), name="rightSequence")
         if move:
             posManager(False)
-            self.pandaActor.setH(self.pandaActor, 45)
-            self.camera.setH(self.camera, -45)
+            leftSequence.start()
     
     def pandaVanish(self):
-        moveManager()
+        rotateManager()
         self.pandaActor.setR(self.pandaActor, 180)
-        
+
     def pandaStretchAttack(self):
         damageCheck(True)
         stretch = stretchCheck(1)
         self.pandaActor.setScale(stretch,stretch,stretch)
         stretchCheck(2)
 
+    def pandaSpinAttack(self):
+        h = self.pandaActor.getH()
+        p = self.pandaActor.getP()
+        r = self.pandaActor.getR()
+        hprInterval1 = self.pandaActor.hprInterval(1,Point3(h+180,p+180,r+180),startHpr=Point3(h,p,r))
+        hprInterval2 = self.pandaActor.hprInterval(1,Point3(h+360,p+360,r+360),startHpr=Point3(h+180,p+180,r+180))
+        pandaSpin = Sequence(hprInterval1, hprInterval2)
+        for i in range(3):
+            pandaSpin.start()
+
     def pandaResetTask(self):
-        global textObjects
-        canReset = m.resetManager(False)
+        global textObjects,appendz,pandaActorHealth,pandaActor2Health
+        canReset = resetManager(False)
         if canReset:
+            appenz = appendz % 8
             self.pandaActor2.setZ(0)
             self.bossSequene.loop
             self.pandaActor.setZ(0)
             resetManager(True)
             textObjects[0].destroy()
-            #textObjects[1].destroy()
+            textObjects[1].destroy()
+            pandaActorHealth = 25
+            pandaActor2Health = 150
 
-        
 pdna = Panda()
 pdna.run()
+
